@@ -8,7 +8,7 @@ Data Scientists
 
 # Installing sample_reduction_with_typicality
 ```bash
-git clone https://github.com/aws/sample_reduction_with_typicality.git
+git clone https://github.com/amazon-science/sample-reduction-with-typicality.git
 cd sample_reduction_with_typicality
 pip install .
 ```
