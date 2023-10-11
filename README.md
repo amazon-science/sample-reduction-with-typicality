@@ -21,6 +21,16 @@ import pandas as pd
 import scipy.stats as sp
 from scipy.stats import norm
 from sample_reduction_with_typicality import SampleReductionWithTypicality
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+log = logging.getLogger(__name__)
 
 n = 100000
 Rho = [
