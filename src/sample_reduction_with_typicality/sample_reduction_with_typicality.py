@@ -248,25 +248,34 @@ class SampleReductionWithTypicality(object):
         if verbose:
             log.info("Assignment done")
         cloud_dict = {}
-        assert len(clusters) == len(np.unique(cluster_assignment))
+        try:
+            assert len(clusters) >= len(np.unique(cluster_assignment))
+        except AssertionError as a:
+            err_msg = f'Number of clusters is less than the number of unique cluster assignment: {len(clusters)} <> {len(np.unique(cluster_assignment))}'
+            raise AssertionError(err_msg)
         sorted_inds = {}
         cluster_sizes = {}
         nb_clusters = len(clusters)
         if verbose:
             log.info("Look for the nearest neighbors")
         loop = 0
+        valid_cluster_ids = []
         for ind in range(len(clusters)):
             cloud_inds = np.where(cluster_assignment == ind)[0]
             cloud_dict[ind] = X[cloud_inds]
-            if verbose:
-                log.info(
-                    f"Cluster {ind} out of {nb_clusters}, with {cloud_dict[ind].shape[0]} points"
+            # because we reassign the points to the nearest clusters, some might lose all their points
+            # we need to remove such cases
+            if cloud_dict[ind].shape[0] > 0:
+                valid_cluster_ids.append(ind)
+                if verbose:
+                    log.info(
+                        f"Cluster {ind} out of {nb_clusters}, with {cloud_dict[ind].shape[0]} points"
+                    )
+                neighbours_inds, distances = self.k_nearest_neighbors(
+                    cloud_dict[ind], k=min(nb_neighbors, cloud_dict[ind].shape[0] - 1)
                 )
-            neighbours_inds, distances = self.k_nearest_neighbors(
-                cloud_dict[ind], k=min(nb_neighbors, cloud_dict[ind].shape[0] - 1)
-            )
-            sorted_inds[ind] = np.argsort(distances.sum(axis=1))
-            cluster_sizes[ind] = cloud_dict[ind].shape[0]
+                sorted_inds[ind] = np.argsort(distances.sum(axis=1))
+                cluster_sizes[ind] = cloud_dict[ind].shape[0]
             loop += 1
         if verbose:
             log.info("done")
@@ -282,7 +291,7 @@ class SampleReductionWithTypicality(object):
             )
             X_transient = np.empty((0, d))
             k = nb_neighbors
-            for ind in range(len(clusters)):
+            for ind in valid_cluster_ids:
                 X_transient = np.concatenate(
                     (
                         X_transient,
@@ -316,7 +325,8 @@ class SampleReductionWithTypicality(object):
                 H_transient = 0
                 k = nb_neighbors
                 X_transient = np.empty((0, d))
-                for ind in range(len(clusters)):
+#                 for ind in range(len(clusters)):
+                for ind in valid_cluster_ids:
                     X_transient = np.concatenate(
                         (
                             X_transient,
@@ -416,7 +426,8 @@ class SampleReductionWithTypicality(object):
         knn = NearestNeighbors(n_neighbors=k + 1)
         knn.fit(X)
         distance_mat, neighbours_mat = knn.kneighbors(X)
-        return neighbours_mat[:, 1:], distance_mat[:, 1:]
+        # add +1 to avoid log(0) afterwards
+        return neighbours_mat[:, 1:], distance_mat[:, 1:] + 1
 
     @staticmethod
     def get_indices(X, batch_size):
@@ -449,6 +460,7 @@ class SampleReductionWithTypicality(object):
         """
         Entropy definition as per paper
         """
+        d = min(d, 100) # to deal with gamma function reaching infinite values
         return (
             np.log(ml)
             - digamma(k)
