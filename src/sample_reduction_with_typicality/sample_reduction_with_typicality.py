@@ -250,8 +250,8 @@ class SampleReductionWithTypicality(object):
         cloud_dict = {}
         try:
             assert len(clusters) >= len(np.unique(cluster_assignment))
-        except AssertionError as a:
-            err_msg = f'Number of clusters is less than the number of unique cluster assignment: {len(clusters)} <> {len(np.unique(cluster_assignment))}'
+        except AssertionError:
+            err_msg = f"Number of clusters is less than the number of unique cluster assignment: {len(clusters)} <> {len(np.unique(cluster_assignment))}"
             raise AssertionError(err_msg)
         sorted_inds = {}
         cluster_sizes = {}
@@ -460,7 +460,7 @@ class SampleReductionWithTypicality(object):
         """
         Entropy definition as per paper
         """
-        d = min(d, 100) # to deal with gamma function reaching infinite values
+        d = min(d, 100)  # to deal with gamma function reaching infinite values
         return (
             np.log(ml)
             - digamma(k)
