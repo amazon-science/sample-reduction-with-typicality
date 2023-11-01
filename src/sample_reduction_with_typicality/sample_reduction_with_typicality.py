@@ -20,6 +20,51 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
+def gamma_nint_n(x):
+    """
+    computes logarithm of gamma function when x is of the form 'positive integer divided by 2'
+    """
+    out = np.log(np.sqrt(np.pi))
+
+    while x != 1 / 2:
+        x = x - 1
+        out += np.log(x)
+
+    return out
+
+
+def gamma_int_n(n):
+    """
+    computes logarithm of factorial of n
+    """
+    out = 0
+
+    while n != 1:
+        n = n - 1
+        out += np.log(n)
+
+    return out
+
+
+def log_gamma_fcn_n(x):
+    """
+    Computes gamma value for given x
+    Input: x must be a positive integer or a real number of form positive integer divided by 2 (limited to our use case
+           because feature dimension is always a positive integer)
+    Output: logarithm of gamma vlaue
+    See https://www.probabilitycourse.com/chapter4/4_2_4_Gamma_distribution.php for toy examples
+    """
+
+    if type(x) == int:
+        return gamma_int_n(x)
+    elif type(x) == float and x.is_integer():
+        return gamma_int_n(x)
+    elif type(x) == float and not x.is_integer() and (((2 * x) + 1) % 2) == 0:
+        return gamma_nint_n(x)
+    else:
+        raise ValueError("Feature dimension must be a postive integer")
+
+
 class SampleReductionWithTypicality(object):
     """
     Reduce/downsize a matrix based on entropy.
@@ -325,7 +370,6 @@ class SampleReductionWithTypicality(object):
                 H_transient = 0
                 k = nb_neighbors
                 X_transient = np.empty((0, d))
-#                 for ind in range(len(clusters)):
                 for ind in valid_cluster_ids:
                     X_transient = np.concatenate(
                         (
@@ -460,11 +504,10 @@ class SampleReductionWithTypicality(object):
         """
         Entropy definition as per paper
         """
-        d = min(d, 100)  # to deal with gamma function reaching infinite values
         return (
             np.log(ml)
             - digamma(k)
-            + np.log(np.pi ** (d / 2) / gamma((1 + d / 2)))
+            + np.log(np.pi ** (d / 2) / log_gamma_fcn_n((1 + d / 2)))
             + d / ml * (np.log(distances).sum())
         )
 
