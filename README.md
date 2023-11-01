@@ -1,6 +1,6 @@
 # Sample_Reduction_With_Typicality
 
-This package implements the algorithm describes in [this paper](https://www.google.com/search?q=GET+PAPER+URL+HERE). The algorithm will downsample an input matrix, such that the downsampled matrix retains similar entropy characteristics as the original one.
+This package implements the algorithm describes in [this paper](https://www.google.com/search?q=GET+PAPER+URL+HERE). This paper introduces typicality for information retrieval (TIR) for down-sampling training data with high dimensional feature space. High dimensionality and data size are often blockers to fitting complex machine learning models in various domains. TIR allows for an efficient and explainable model training without compromising model performance. We leverage the notion of typicality, which is an empirically derived quantity that resembles probability. We use prototypes, which are the local peaks of the typicality as well as of the data density in a pre-processing step, as a way to extract most information from the training data. We apply the proposed approach for three different models on simulated data as well as real industry data sets. Our results indicate that the downsampled dataset, obtained by our method, retains information content of the overall set and promises high model performance. The following example can be used to mimic the simulation results in the paper.
 
 # Audience
 
